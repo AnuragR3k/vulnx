@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import "/fonts/BitcountGridSingle.otf";
+
 
 function App() {
   const [url, setUrl] = useState("");

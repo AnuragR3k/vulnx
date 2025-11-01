@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+assetsInclude: ['**/*.otf', '**/*.ttf', '**/*.woff', '**/*.woff2']
+
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH || '/',
+  base: process.env.VITE_BASE_PATH || '/vulnx',
+  
   
   server: {
     port: 5173,
