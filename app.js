@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "/fonts/BitcountGridSingle.otf";
+import "/fonts/BitcountGridSingle.ttf";
 
 
 function App() {
