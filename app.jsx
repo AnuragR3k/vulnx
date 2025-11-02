@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-// Ensure this path is correct
 import logo from "./assets/V-removebg-preview.png"; 
 import "./index.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
+
+// 🟢 API URL Configuration - reads from environment variable or defaults to localhost
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Background3D() {
   const canvasRef = useRef(null);
@@ -93,7 +95,6 @@ function Background3D() {
   return null;
 }
 
-// Navigation Bar Component
 function Navbar({ currentNav, setNav }) {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -108,7 +109,6 @@ function Navbar({ currentNav, setNav }) {
 
   return (
     <>
-      {/* Single stretching transparent box */}
       <div
         style={{
           position: "fixed",
@@ -121,7 +121,7 @@ function Navbar({ currentNav, setNav }) {
           justifyContent: isScrolled ? "center" : "space-between",
           background: "rgba(21, 21, 21, 0.7)",
           backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)", // Safari support
+          WebkitBackdropFilter: "blur(10px)",
           borderRadius: "10px",
           padding: "10px 20px",
           border: "1px solid rgba(48, 79, 254, 0.3)",
@@ -131,7 +131,6 @@ function Navbar({ currentNav, setNav }) {
           minHeight: "60px",
         }}
       >
-        {/* Logo - fades out when scrolled */}
         <img
           src={logo}
           alt="VulnX Logo"
@@ -152,7 +151,6 @@ function Navbar({ currentNav, setNav }) {
           onClick={() => setNav("home")}
         />
 
-        {/* Navigation Links - always visible */}
         <div
           style={{
             display: "flex",
@@ -198,7 +196,6 @@ function Navbar({ currentNav, setNav }) {
           </button>
         </div>
 
-        {/* Auth Buttons - fade out when scrolled */}
         <div
           style={{
             display: "flex",
@@ -225,55 +222,47 @@ function Navbar({ currentNav, setNav }) {
   );
 }
 
-// ------------------------------------------------------------------
-// ENHANCED FRAMER MOTION VARIANTS FOR SMOOTHNESS
-// ------------------------------------------------------------------
-
-// Variants for overall page transitions
 const pageVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20, 
-      scale: 0.98,
-    },
-    enter: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
-      transition: { 
-        duration: 0.7, 
-        ease: [0.6, -0.05, 0.01, 0.99], // A custom, "springy" easing curve
-      } 
-    },
-    exit: { 
-      opacity: 0, 
-      y: -10, 
-      scale: 0.99,
-      transition: { 
-        duration: 0.5, 
-        ease: "easeInOut",
-      } 
-    },
-  };
+  hidden: { 
+    opacity: 0, 
+    y: 20, 
+    scale: 0.98,
+  },
+  enter: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      duration: 0.7, 
+      ease: [0.6, -0.05, 0.01, 0.99],
+    } 
+  },
+  exit: { 
+    opacity: 0, 
+    y: -10, 
+    scale: 0.99,
+    transition: { 
+      duration: 0.5, 
+      ease: "easeInOut",
+    } 
+  },
+};
 
-  // Variants for staggering internal content (like on the Home page)
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delayChildren: 0.2, 
-        staggerChildren: 0.15, 
-      },
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.2, 
+      staggerChildren: 0.15, 
     },
-  };
+  },
+};
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0, filter: 'blur(3px)' },
-    visible: { y: 0, opacity: 1, filter: 'blur(0px)' },
-  };
-
-// ------------------------------------------------------------------
+const itemVariants = {
+  hidden: { y: 30, opacity: 0, filter: 'blur(3px)' },
+  visible: { y: 0, opacity: 1, filter: 'blur(0px)' },
+};
 
 function App() {
   const [nav, setNav] = useState("home");
@@ -298,12 +287,15 @@ function App() {
     setLoading(true);
     setResult(null);
     setError(null);
+    
     try {
-      const response = await fetch("/api/scan", {
+      // 🟢 Updated to use API_URL constant
+      const response = await fetch(`${API_URL}/api/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, mode }),
       });
+      
       if (!response.ok) throw new Error(`Scan failed: ${response.statusText}`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
@@ -362,11 +354,8 @@ function App() {
     }, 250);
   };
 
-
-  // Single render with AnimatePresence & keyed motion div
   return (
     <>
-      {/* 🟢 FIXED: Background and Navbar are now OUTSIDE AnimatePresence */}
       <Background3D />
       <Navbar currentNav={nav} setNav={setNav} />
 
@@ -409,7 +398,6 @@ function App() {
                     Secure Faster
                   </motion.h1>
 
-                  {/* Description */}
                   <motion.p
                     style={{
                       textAlign: "center",
@@ -439,7 +427,6 @@ function App() {
                 </motion.div>
               </div>
 
-              {/* Extra content to make page scrollable */}
               <div
                 style={{
                   minHeight: "100vh",
@@ -508,11 +495,9 @@ function App() {
             </div>
           )}
           
-          {/* 🟢 FIXED: Use AnimatePresence for the internal modal/form switch */}
           {nav === "scan" && (
             <AnimatePresence mode="wait" initial={false}>
               {!acceptedTerms ? (
-                // Permission modal
                 <motion.div key="modal" variants={pageVariants} initial="hidden" animate="enter" exit="exit" style={modalStyles.overlay}>
                   <div style={modalStyles.modal}>
                     <h2>Permission Required</h2>
@@ -532,7 +517,6 @@ function App() {
                   </div>
                 </motion.div>
               ) : (
-                // Scan page content
                 <motion.div key="scanForm" variants={pageVariants} initial="hidden" animate="enter" exit="exit" style={styles.container}>
                   <h1 style={styles.heading}>VulnX - Website Vulnerability Scanner</h1>
                   <form onSubmit={handleScan} style={styles.form}>
@@ -609,7 +593,6 @@ function App() {
   );
 }
 
-// Navigation styles (omitted for brevity, assume correct)
 const navStyles = {
   navLink: {
     background: "transparent",
