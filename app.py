@@ -5,11 +5,18 @@ from flask_cors import CORS
 import time
 from scanner import WebSecurityScanner  # Your custom scanner
 
+
 DB_PATH = os.environ.get('VULNX_DB_PATH', './vulnx.sqlite3')
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY','changeme-please')
 
+
+CORS(app, origins=[
+    "https://vulnx.vercel.app",  # Your production URL
+    "http://localhost:5173",      # For local testing
+    "*"                           # Or allow all (less secure)
+])
 # --- Database helpers ---
 def get_db():
     if 'db' not in g:
@@ -96,3 +103,8 @@ def api_whoami():
 if __name__ == '__main__':
     print("[SERVER] Starting VulnX backend on port 5000...")
     app.run(debug=True, port=5000, host='0.0.0.0')
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    print(f"[SERVER] Starting VulnX backend on port {port}...")
+    app.run(debug=False, port=port, host='0.0.0.0')

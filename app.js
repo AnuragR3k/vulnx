@@ -122,6 +122,51 @@ const styles = {
     marginTop: 10,
   },
 };
+// New, enhanced variants for smoother, more dynamic transitions
+const pageVariants = {
+  // Start state: slightly scaled down, fully transparent, slightly below position
+  hidden: { 
+    opacity: 0, 
+    y: 20, 
+    scale: 0.98,
+  },
+  // Enter state: full opacity, original position and scale
+  enter: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      duration: 0.7, 
+      ease: [0.6, -0.05, 0.01, 0.99], // A custom, "springy" easing curve
+    } 
+  },
+  // Exit state: fades out and moves slightly up
+  exit: { 
+    opacity: 0, 
+    y: -10, 
+    scale: 0.99,
+    transition: { 
+      duration: 0.5, 
+      ease: "easeInOut",
+    } 
+  },
+};
 
+// Variants for staggering internal content (like on the Home page)
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.2, // Delay before the first child starts
+      staggerChildren: 0.15, // Delay between each child
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 30, opacity: 0, filter: 'blur(3px)' },
+  visible: { y: 0, opacity: 1, filter: 'blur(0px)' },
+};
 export default App;
 
