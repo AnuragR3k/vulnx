@@ -105,3 +105,6 @@ urllib3==2.3.0
 Werkzeug==3.1.3
 xkbregistry==0.3
 zaproxy==0.4.0
+
+# VulnX SIEM integration (siem_integration.py)
+# Uses requests (listed above) for HTTP delivery; stdlib for threading/logging/json

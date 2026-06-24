@@ -92,6 +92,131 @@ function Background3D() {
   return null;
 }
 
+const GRADE_COLORS = {
+  "A+": { bg: "linear-gradient(135deg, #00c853 0%, #00e676 50%, #69f0ae 100%)", glow: "#00e676", text: "#003d00" },
+  "A":  { bg: "linear-gradient(135deg, #00c853 0%, #4caf50 100%)", glow: "#4caf50", text: "#003d00" },
+  "A-": { bg: "linear-gradient(135deg, #66bb6a 0%, #81c784 100%)", glow: "#81c784", text: "#1b5e20" },
+  "B+": { bg: "linear-gradient(135deg, #9ccc65 0%, #aed581 100%)", glow: "#aed581", text: "#33691e" },
+  "B":  { bg: "linear-gradient(135deg, #c0ca33 0%, #cddc39 100%)", glow: "#cddc39", text: "#33691e" },
+  "B-": { bg: "linear-gradient(135deg, #fbc02d 0%, #ffeb3b 100%)", glow: "#ffeb3b", text: "#5d4037" },
+  "C+": { bg: "linear-gradient(135deg, #ffa726 0%, #ffb74d 100%)", glow: "#ffb74d", text: "#4e342e" },
+  "C":  { bg: "linear-gradient(135deg, #ff9800 0%, #ffa726 100%)", glow: "#ffa726", text: "#4e342e" },
+  "C-": { bg: "linear-gradient(135deg, #ff7043 0%, #ff8a65 100%)", glow: "#ff8a65", text: "#4e342e" },
+  "D":  { bg: "linear-gradient(135deg, #ef5350 0%, #e57373 100%)", glow: "#e57373", text: "#fff" },
+  "F":  { bg: "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)", glow: "#d32f2f", text: "#fff" },
+};
+
+function SecurityGradeCard({ grade }) {
+  if (!grade) return null;
+
+  const colors = GRADE_COLORS[grade.grade] || GRADE_COLORS["F"];
+  const statusIcon = { pass: "✓", warn: "!", fail: "✗" };
+  const statusColor = { pass: "#00e676", warn: "#ffab00", fail: "#ff5252" };
+
+  return (
+    <div style={gradeStyles.card}>
+      <div style={gradeStyles.cardHeader}>
+        <span style={gradeStyles.badge}>Security Posture</span>
+        <span style={gradeStyles.subtitle}>Headers & SSL/TLS Analysis</span>
+      </div>
+
+      <div style={gradeStyles.heroRow}>
+        <div
+          style={{
+            ...gradeStyles.gradeCircle,
+            background: colors.bg,
+            boxShadow: `0 0 40px ${colors.glow}66, 0 0 80px ${colors.glow}33, inset 0 2px 0 rgba(255,255,255,0.3)`,
+          }}
+        >
+          <span style={{ ...gradeStyles.gradeLetter, color: colors.text }}>{grade.grade}</span>
+          <span style={{ ...gradeStyles.gradeScore, color: colors.text }}>{grade.score}/100</span>
+        </div>
+
+        <div style={gradeStyles.heroInfo}>
+          <h3 style={gradeStyles.summary}>{grade.summary}</h3>
+          <p style={gradeStyles.targetLabel}>Target</p>
+          <code style={gradeStyles.targetUrl}>{grade.target}</code>
+          {grade.ssl?.protocol && (
+            <div style={gradeStyles.tlsBadge}>
+              <span style={gradeStyles.tlsDot} />
+              {grade.ssl.protocol}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={gradeStyles.section}>
+        <h4 style={gradeStyles.sectionTitle}>HTTP Security Headers</h4>
+        <div style={gradeStyles.headerGrid}>
+          {grade.headers.map((h) => (
+            <div key={h.name} style={gradeStyles.headerRow}>
+              <span style={{ ...gradeStyles.headerStatus, color: statusColor[h.status] }}>
+                {statusIcon[h.status]}
+              </span>
+              <div style={gradeStyles.headerBody}>
+                <div style={gradeStyles.headerNameRow}>
+                  <span style={gradeStyles.headerName}>{h.name}</span>
+                  <span style={gradeStyles.headerPoints}>{h.points}/{h.max_points} pts</span>
+                </div>
+                <span style={gradeStyles.headerDesc}>{h.description}</span>
+                {h.detail && h.detail !== "Missing" && (
+                  <span style={gradeStyles.headerDetail}>{h.detail}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {grade.ssl && (
+        <div style={gradeStyles.section}>
+          <h4 style={gradeStyles.sectionTitle}>SSL/TLS Certificate</h4>
+          <div style={gradeStyles.sslGrid}>
+            <div style={gradeStyles.sslStat}>
+              <span style={gradeStyles.sslLabel}>HTTPS</span>
+              <span style={{ color: grade.ssl.enabled ? "#00e676" : "#ff5252" }}>
+                {grade.ssl.enabled ? "Enabled" : "Not Available"}
+              </span>
+            </div>
+            {grade.ssl.certificate && (
+              <>
+                <div style={gradeStyles.sslStat}>
+                  <span style={gradeStyles.sslLabel}>Issuer</span>
+                  <span>{grade.ssl.certificate.issuer}</span>
+                </div>
+                <div style={gradeStyles.sslStat}>
+                  <span style={gradeStyles.sslLabel}>Valid Until</span>
+                  <span>{new Date(grade.ssl.certificate.valid_until).toLocaleDateString()}</span>
+                </div>
+                <div style={gradeStyles.sslStat}>
+                  <span style={gradeStyles.sslLabel}>Days Remaining</span>
+                  <span style={{
+                    color: grade.ssl.certificate.days_remaining > 30 ? "#00e676"
+                      : grade.ssl.certificate.days_remaining > 0 ? "#ffab00" : "#ff5252"
+                  }}>
+                    {grade.ssl.certificate.days_remaining} days
+                  </span>
+                </div>
+              </>
+            )}
+            <div style={gradeStyles.sslStat}>
+              <span style={gradeStyles.sslLabel}>SSL Score</span>
+              <span>{grade.ssl.points}/{grade.ssl.max_points} pts</span>
+            </div>
+          </div>
+          {grade.ssl.issues?.length > 0 && (
+            <ul style={gradeStyles.issueList}>
+              {grade.ssl.issues.map((issue, i) => (
+                <li key={i} style={gradeStyles.issueItem}>{issue}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Navigation Bar Component
 function Navbar({ currentNav, setNav }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -220,6 +345,7 @@ function App() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [securityGrade, setSecurityGrade] = useState(null);
   const [error, setError] = useState(null);
   const [mode, setMode] = useState("basic");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -234,6 +360,7 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setResult(null);
+    setSecurityGrade(null);
     setError(null);
     try {
       const response = await fetch("/api/scan", {
@@ -245,6 +372,7 @@ function App() {
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       setResult(data.vulnerabilities || []);
+      setSecurityGrade(data.security_grade || null);
     } catch (err) {
       setError(err.message || "An error occurred");
     } finally {
@@ -259,6 +387,10 @@ function App() {
     html += `<p><b>Target:</b> ${url}</p>`;
     html += `<p><b>Mode:</b> ${mode.charAt(0).toUpperCase() + mode.slice(1)}</p>`;
     html += `<p><b>Date:</b> ${dateStr}</p>`;
+    if (securityGrade) {
+      html += `<h2>Security Grade: ${securityGrade.grade} (${securityGrade.score}/100)</h2>`;
+      html += `<p>${securityGrade.summary}</p>`;
+    }
     if (!result || result.length === 0) {
       html += `<div style='margin-top:20px;'><b>No vulnerabilities found.</b></div>`;
     } else {
@@ -337,6 +469,7 @@ if (nav === "home") {
           <p style={{marginBottom: 30}}>⚡ Fast and automated detection</p>
           <p style={{marginBottom: 30}}>📊 Detailed reports with actionable insights</p>
           <p style={{marginBottom: 30}}>🛡️ XSS, SQL Injection, and more</p>
+          <p style={{marginBottom: 30}}>🏆 SSL Labs-style Security Headers & TLS grading (A+ to F)</p>
         </div>
       </div>
     </>
@@ -390,6 +523,7 @@ if (nav === "home") {
               <li>Basic vulnerability scanning (XSS, SQL Injection)</li>
               <li>Advanced scanning with OWASP ZAP integration</li>
               <li>Detailed vulnerability reports</li>
+              <li>SSL Labs-style security headers & TLS letter grading</li>
               <li>Export scan results as HTML reports</li>
             </ul>
             <h3 style={{color: '#304ffe', marginTop: 24, marginBottom: 12}}>Disclaimer</h3>
@@ -453,6 +587,7 @@ if (nav === "home") {
             </button>
           </form>
           {error && <p style={styles.error}>{error}</p>}
+          {securityGrade && <SecurityGradeCard grade={securityGrade} />}
           {result && (
             <div style={styles.results}>
               <h2>Scan Results</h2>
@@ -543,7 +678,7 @@ const styles = {
     alignItems:'center',
   },
   container: {
-    maxWidth: 800,
+    maxWidth: 920,
     margin: "100px auto 40px",
     backgroundColor: "#151515",
     padding: 32,
@@ -623,6 +758,205 @@ const styles = {
     marginTop: 10,
     fontFamily: "'BitcountGridSingle', monospace",
     fontWeight: 400,
+  },
+};
+
+const gradeStyles = {
+  card: {
+    marginTop: 28,
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 16,
+    background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    border: "1px solid rgba(48, 79, 254, 0.4)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+    overflow: "hidden",
+  },
+  cardHeader: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    marginBottom: 24,
+  },
+  badge: {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: "0.15em",
+    textTransform: "uppercase",
+    color: "#7aa2ff",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: "#8892b0",
+  },
+  heroRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 32,
+    marginBottom: 28,
+    flexWrap: "wrap",
+  },
+  gradeCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: "50%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  gradeLetter: {
+    fontSize: 52,
+    fontWeight: 800,
+    lineHeight: 1,
+    fontFamily: "'BitcountGridSingle', monospace",
+  },
+  gradeScore: {
+    fontSize: 14,
+    fontWeight: 600,
+    marginTop: 4,
+    opacity: 0.85,
+  },
+  heroInfo: {
+    flex: 1,
+    minWidth: 200,
+  },
+  summary: {
+    fontSize: 18,
+    color: "#fafbfc",
+    margin: "0 0 12px 0",
+    lineHeight: 1.4,
+  },
+  targetLabel: {
+    fontSize: 11,
+    color: "#8892b0",
+    margin: "0 0 4px 0",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+  },
+  targetUrl: {
+    display: "block",
+    fontSize: 13,
+    color: "#7aa2ff",
+    background: "rgba(0,0,0,0.3)",
+    padding: "6px 10px",
+    borderRadius: 6,
+    wordBreak: "break-all",
+  },
+  tlsBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 12,
+    padding: "6px 14px",
+    background: "rgba(0, 230, 118, 0.12)",
+    border: "1px solid rgba(0, 230, 118, 0.3)",
+    borderRadius: 20,
+    fontSize: 12,
+    color: "#00e676",
+  },
+  tlsDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    background: "#00e676",
+    boxShadow: "0 0 8px #00e676",
+  },
+  section: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTop: "1px solid rgba(255,255,255,0.08)",
+  },
+  sectionTitle: {
+    fontSize: 13,
+    color: "#7aa2ff",
+    textTransform: "uppercase",
+    letterSpacing: "0.12em",
+    margin: "0 0 16px 0",
+  },
+  headerGrid: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+  headerRow: {
+    display: "flex",
+    gap: 12,
+    padding: "12px 14px",
+    background: "rgba(0,0,0,0.25)",
+    borderRadius: 8,
+    border: "1px solid rgba(255,255,255,0.05)",
+  },
+  headerStatus: {
+    fontSize: 16,
+    fontWeight: 700,
+    width: 20,
+    textAlign: "center",
+    flexShrink: 0,
+  },
+  headerBody: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+  headerNameRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerName: {
+    fontSize: 14,
+    color: "#fafbfc",
+    fontWeight: 600,
+  },
+  headerPoints: {
+    fontSize: 11,
+    color: "#8892b0",
+  },
+  headerDesc: {
+    fontSize: 12,
+    color: "#8892b0",
+  },
+  headerDetail: {
+    fontSize: 11,
+    color: "#5a6a8a",
+    fontFamily: "monospace",
+    marginTop: 2,
+  },
+  sslGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+    gap: 12,
+  },
+  sslStat: {
+    padding: "12px 14px",
+    background: "rgba(0,0,0,0.25)",
+    borderRadius: 8,
+    border: "1px solid rgba(255,255,255,0.05)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    fontSize: 13,
+    color: "#fafbfc",
+  },
+  sslLabel: {
+    fontSize: 10,
+    color: "#8892b0",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+  },
+  issueList: {
+    margin: "12px 0 0 0",
+    paddingLeft: 20,
+    color: "#ffab00",
+    fontSize: 12,
+    lineHeight: 1.6,
+  },
+  issueItem: {
+    marginBottom: 4,
   },
 };
 

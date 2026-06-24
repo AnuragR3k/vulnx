@@ -1,10 +1,19 @@
 import sqlite3
 import os
+import logging
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 import time
 from scanner import WebSecurityScanner  # Your custom scanner
+from siem_integration import SIEMForwarder
+from security_grade import analyze_security_posture
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.environ.get('VULNX_DB_PATH', './vulnx.sqlite3')
 
@@ -54,6 +63,8 @@ app.before_request(init_db)
 
 CORS(app)  # Enable CORS for React frontend
 
+siem_forwarder = SIEMForwarder()
+
 @app.route('/api/scan', methods=['POST'])
 def scan():
     try:
@@ -67,12 +78,22 @@ def scan():
         if not target_url.startswith(('http://', 'https://')):
             target_url = 'https://' + target_url
 
-        print(f"[BASIC SCAN] Starting scan on {target_url}")
+        logger.info("[BASIC SCAN] Starting scan on %s", target_url)
         scanner = WebSecurityScanner(target_url, max_depth=1)
         vulnerabilities = scanner.scan()
-        print(f"[BASIC SCAN] Found {len(vulnerabilities)} vulnerabilities")
+        logger.info("[BASIC SCAN] Found %d vulnerabilities", len(vulnerabilities))
 
-        return jsonify({'vulnerabilities': vulnerabilities}), 200
+        security_grade = analyze_security_posture(target_url)
+        logger.info("[SECURITY GRADE] %s scored %s (%d/100)", target_url, security_grade["grade"], security_grade["score"])
+
+        scan_id = SIEMForwarder.generate_scan_id()
+        try:
+            siem_forwarder.forward_scan_results(target_url, vulnerabilities, scan_id)
+        except Exception as siem_error:
+            # Never fail the scan response if SIEM forwarding raises unexpectedly.
+            logger.error("[SIEM] Forwarding error (scan continues): %s", siem_error)
+
+        return jsonify({'vulnerabilities': vulnerabilities, 'security_grade': security_grade}), 200
 
     except Exception as e:
         import traceback
@@ -101,10 +122,11 @@ def api_whoami():
     pass
 
 if __name__ == '__main__':
-    print("[SERVER] Starting VulnX backend on port 5000...")
-    app.run(debug=True, port=5000, host='0.0.0.0')
-
-if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print(f"[SERVER] Starting VulnX backend on port {port}...")
-    app.run(debug=False, port=port, host='0.0.0.0')
+    debug = os.environ.get('FLASK_DEBUG', 'true').lower() in ('1', 'true', 'yes')
+    logger.info("[SERVER] Starting VulnX backend on port %s", port)
+    if siem_forwarder.enabled:
+        logger.info("[SERVER] SIEM integration active — endpoint=%s", siem_forwarder.endpoint)
+    else:
+        logger.info("[SERVER] SIEM integration inactive — set SIEM_ENDPOINT to enable")
+    app.run(debug=debug, port=port, host='0.0.0.0')

@@ -6,3 +6,6 @@ python-owasp-zap-v2.4==0.0.21
 Flask
 flask-cors
 gunicorn
+
+# SIEM integration (siem_integration.py) — HTTP delivery via requests (above)
+# Uses stdlib: threading, logging, json, datetime

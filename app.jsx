@@ -399,23 +399,32 @@ function App() {
                   </motion.h1>
 
                   <motion.p
-                    style={{
-                      textAlign: "center",
-                      color: "#bbb",
-                      fontSize: 18,
-                      lineHeight: 1.6,
-                      maxWidth: 700,
-                      marginBottom: 32,
-                      marginTop: -270,
-                      fontFamily: "'BitcountGridSingle', monospace",
-                      fontWeight: 400,
-                      letterSpacing: "0.02em",
-                    }}
-                    variants={itemVariants}
-                  >
-                    Automated vulnerability detection for modern web applications.
-                    Find XSS, SQL Injection, and 50+ security flaws in seconds.
-                  </motion.p>
+  style={{
+    textAlign: "center",
+    color: "#bbb",
+    fontSize: 18,
+    lineHeight: 1.6,
+    maxWidth: 700,
+    marginBottom: 32,
+    marginTop: -270,
+    fontFamily: "'BitcountGridSingle', monospace",
+    fontWeight: 400,
+    letterSpacing: "0.02em",
+  }}
+  variants={itemVariants}
+>
+  <span style={{ color: "#9fa8ff" }}>
+    Fast OSINT lookups and automated website security tests —
+  </span>{" "}
+  enter an <b>email</b>, <b>phone</b>, or <b>username</b> to find public data, or paste a site URL to
+  scan for common vulnerabilities.
+  <br /><br />
+  Automated vulnerability detection for modern web applications. Find <b>XSS</b>, <b>SQL Injection</b>,
+  and 50+ security flaws in seconds.
+</motion.p>
+
+
+
 
                   <motion.button
                     style={styles.button}
