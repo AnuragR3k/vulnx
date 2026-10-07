@@ -36,3 +36,39 @@ Security Checks
 Vulnerability Analysis
   ↓
 Results
+
+
+Installation
+git clone https://github.com/AnuragR3k/vulnx.git
+cd vulnx
+
+Backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+
+Frontend
+cd frontend
+npm install
+npm run dev
+
+Use Cases
+- Web application security testing
+- Bug bounty reconnaissance
+- Vulnerability assessment
+- Security research
+- Learning web application security
+- Automating repetitive security workflows
+Roadmap
+- [ ] More vulnerability detection modules
+- [ ] Improved reconnaissance
+- [ ] Automated security reports
+- [ ] Better scan visualization
+- [ ] Parallel scanning
+- [ ] Docker support
+Disclaimer
+VulnX is intended for authorized security testing, research, and educational purposes only.
+Only scan systems that you own or have explicit permission to test.
+Author
+Anurag
