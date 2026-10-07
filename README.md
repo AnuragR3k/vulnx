@@ -22,22 +22,6 @@ VulnX is a cybersecurity tool built to automate common web reconnaissance and vu
 - **Security:** Web reconnaissance, XSS testing, SSL/TLS analysis
 - **Environment:** Linux
 
-## Workflow
-
-```text
-Target
-  ↓
-Reconnaissance
-  ↓
-Service & Endpoint Discovery
-  ↓
-Security Checks
-  ↓
-Vulnerability Analysis
-  ↓
-Results
-
-
 Installation
 git clone https://github.com/AnuragR3k/vulnx.git
 cd vulnx
@@ -72,3 +56,6 @@ VulnX is intended for authorized security testing, research, and educational pur
 Only scan systems that you own or have explicit permission to test.
 Author
 Anurag
+
+
+
